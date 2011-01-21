@@ -30,7 +30,7 @@ class StatementOut(Visitor):
 
   @classmethod
   def handle_body(self, body, *a, **k):
-    body = self.visit(ast.body, *a, **k)
+    body = (self.visit(stmt, *a, **k) for stmt in body)
     body = chain.from_iterable(body)
     body = indent(body, self.level)
     return body
@@ -77,7 +77,7 @@ class StatementOut(Visitor):
   def visit_Assign (self, ast, *a, **k):
     targets = ", ".join(ExpresionOut.visit(target, *a, **k) for target in ast.targets)
     value = ExpresionOut.visit(ast.value, *a, **k)
-    return ["%s = %s" %(targets, ast.value)]
+    return ["%s = %s" %(targets, value)]
 
   @classmethod
   def visit_AugAssign (self, ast, *a, **k):
@@ -125,7 +125,7 @@ class StatementOut(Visitor):
       return head + body + ["else:"] + orelse
 
   @classmethod
-  def visit_if(self, ast, *a, **k):
+  def visit_If(self, ast, *a, **k):
     test = ExpresionOut.visit(ast.test, *a, **k)
     head = "if %s:"
     head %= test
@@ -190,14 +190,14 @@ class StatementOut(Visitor):
   @classmethod
   def visit_Import(self, ast, *a, **k):
     names = join(AliasOut.visit(alias, *a, **k) for alias in ast.names)
-    return "import %s" % names
+    return ["import %s" % names]
 
   @classmethod
   def visit_ImportFrom(self, ast, *a, **k):
     # what dose ast.level do?
     module = ast.module
-    names = join(AliasOut.visit(alias, *a, **k) for alias in ast.names)
-    return "from %s import %s" % (module, names)
+    names = ", ".join(AliasOut.visit(alias, *a, **k) for alias in ast.names)
+    return ["from %s import %s" % (module, names)]
     
 
   @classmethod
@@ -375,14 +375,14 @@ class ExpresionOut(Visitor):
   @classmethod
   def visit_Attribute (self, ast, *a, **k):
     value = self.visit(ast.value, *a, **k)
-    attr = self.visit(ast.attr, *a, **k)
+    attr = ast.attr
     return "%s.%s" % (value, attr)
 
   @classmethod
   def visit_Subscript (self, ast, *a, **k):
     value = self.visit(ast.value, *a, **k)
     slice = SliceOut.visit(ast.slice, *a, **k)
-    return "%s[%s]"(value, slice)
+    return "%s[%s]" % (value, slice)
 
   @classmethod
   def visit_Name (self, ast, *a, **k):
@@ -405,19 +405,19 @@ class SliceOut(Visitor):
   @classmethod
   def visit_Slice (self, ast, *a, **k):
     if ast.lower and ast.upper and ast.step:
-      return "%s:%s:%s" % (ExpresionOut(ast.lower), ExpresionOut(ast.upper), ExpresionOut(ast.step))
+      return "%s:%s:%s" % (ExpresionOut.visit(ast.lower), ExpresionOut.visit(ast.upper), ExpresionOut.visit(ast.step))
     elif ast.lower and ast.upper:
-      return "%s:%s" % (ExpresionOut(ast.lower), ExpresionOut(ast.upper))
+      return "%s:%s" % (ExpresionOut.visit(ast.lower), ExpresionOut.visit(ast.upper))
     elif ast.lower and ast.step:
-      return "%s::%s" % (ExpresionOut(ast.lower), ExpresionOut(ast.step))
+      return "%s::%s" % (ExpresionOut.visit(ast.lower), ExpresionOut.visit(ast.step))
     elif ast.upper and ast.step:
-      return ":%s:%s" % (ExpresionOut(ast.upper), ExpresionOut(ast.step))
+      return ":%s:%s" % (ExpresionOut.visit(ast.upper), ExpresionOut.visit(ast.step))
     elif ast.lower:
-      return "%s:" % ExpresionOut(ast.lower)
+      return "%s:" % ExpresionOut.visit(ast.lower)
     elif ast.upper:
-      return ":%s" % ExpresionOut(ast.upper)
+      return ":%s" % ExpresionOut.visit(ast.upper)
     elif ast.step:
-      return "::%s" % ExpresionOut(ast.step)
+      return "::%s" % ExpresionOut.visit(ast.step)
     else:
       return ":" 
 
@@ -427,7 +427,7 @@ class SliceOut(Visitor):
 
   @classmethod
   def visit_Index (self, ast, *a, **k):
-    return ExpresionOut(ast.value)
+    return ExpresionOut.visit(ast.value)
 
 class OperatorOut(Visitor):
   @classmethod
