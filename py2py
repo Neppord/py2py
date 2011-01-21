@@ -1,0 +1,13 @@
+#! python
+
+if __name__ == "__main__":
+  from sys import argv
+  from ast import parse
+  from py2py_lib import Out
+
+  for filename in argv[1:]:
+    s = "\n".join(file(filename, "r").readlines())
+    s = Out.visit(parse(s))
+    file(filename+".opt", "w").write(s)
+
+
