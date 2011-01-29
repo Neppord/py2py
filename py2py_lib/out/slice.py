@@ -1,4 +1,5 @@
 from visitor import Visitor
+from expr import ExpresionOut
 class SliceOut(Visitor):
 
   @classmethod
@@ -31,6 +32,7 @@ class SliceOut(Visitor):
 
   @classmethod
   def visit_Index (self, ast, *a, **k):
+    from expr import ExpresionOut
     return ExpresionOut.visit(ast.value)
 
 
