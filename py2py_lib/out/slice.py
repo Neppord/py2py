@@ -1,5 +1,4 @@
 from visitor import Visitor
-from expr import ExpresionOut
 class SliceOut(Visitor):
 
   @classmethod

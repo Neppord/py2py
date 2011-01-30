@@ -1,4 +1,4 @@
-from node import Node.py
+from node import Node
 
 class Literal(Node):
 

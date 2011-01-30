@@ -1,0 +1,4 @@
+*.pyc
+*.opt
+*.swp
+build/*
