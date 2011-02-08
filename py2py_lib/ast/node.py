@@ -39,22 +39,19 @@ class Add(Node):
     if isinstance(first, str):
       first = Literal(first)
 
-    if isinstance(first, Literal):
-      self.nodes.append(first)
-    elif isinstance(first, Add):
+    if isinstance(first, Add):
       self.nodes += first.nodes
     else:
-      raise ParserBuilderError("can't add (%s) add (%s)"% (first.__class__.__name__, second.__class__.__name__))
+      self.nodes.append(first)
 
     if isinstance(second, str):
       second = Literal(second)
 
-    if isinstance(second, Literal):
-      self.nodes.append(second)
-    elif isinstance(second, Add):
+    if isinstance(second, Add):
       self.nodes += second.nodes
     else:
-      raise ParserBuilderError("can't add (%s) add (%s)"% (first.__class__.__name__, second.__class__.__name__))
+      self.nodes.append(second)
+
     self.clear()
 
   def clear(self):
